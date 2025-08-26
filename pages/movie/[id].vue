@@ -34,7 +34,7 @@
 import { onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMoviesStore } from '~/stores/movies'
-// import Loading from '~/components/Loading.vue'
+import Loading from '~/components/Loading.vue'
 
 const route = useRoute()
 const store = useMoviesStore()
@@ -47,7 +47,6 @@ const year = computed(() => (store.movieDetails?.release_date ? new Date(store.m
 const isLastGenre = (g) => store.movieDetails?.genres?.slice(-1)?.[0]?.id === g.id
 
 onMounted(async () => {
-  store._loadFavorites()
   await store.fetchMovieDetails(route.params.id, { language: 'en-US' })
 })
 </script>

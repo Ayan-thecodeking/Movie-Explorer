@@ -37,7 +37,14 @@
     </form>
 
     <!-- Feedback -->
-    <div v-if="store.loading" class="loading-wrap"><Loading /></div>
+     <div v-if="store.loading" class="loading-wrap">
+  <Loading
+    :fullscreen="submitting"
+    :message="loadingMessage"
+    :size="48"
+    :thickness="5"
+  />
+</div>
     <p v-else-if="store.error" class="error">{{ store.error }}</p>
 
     <!-- Results grid -->
@@ -54,6 +61,16 @@
           @toggle-fav="store.toggleFavorite(m.id)"
         />
       </div>
+
+      <!-- Pagination -->
+      <Pagination
+        :page="store.page"
+        :total-pages="store.totalPages"
+        :loading="store.loading"
+        @prev="goPrev"
+        @next="goNext"
+        @go="goPage"
+      />
     </section>
   </div>
 </template>
@@ -62,46 +79,62 @@
 import { ref, computed, onMounted } from 'vue'
 import { useMoviesStore } from '~/stores/movies'
 import MovieCard from '~/components/MovieCard.vue'
-// import Loading from '~/components/Loading.vue'
+import Pagination from '~/components/Pagination.vue'
+import Loading from '~/components/Loading.vue'
 
 const store = useMoviesStore()
 
 const title = ref('')
 const year = ref('')
 const genreId = ref('')
+const submitting = ref(false)
 
 const hasFilters = computed(() => title.value || year.value || genreId.value)
 const cards = computed(() => (hasFilters.value ? store.searchedMovies : store.movies))
-
+const loadingMessage = computed(() =>
+  hasFilters.value ? 'Searching movies…' : 'Loading now playing…'
+)
 const onSubmit = async () => {
-  if (!hasFilters.value) {
-    // no filters — show now playing
-    await store.fetchNowPlaying({ page: 1, language: 'en-US' })
-    return
+  submitting.value = true
+  try {
+    if (!hasFilters.value) {
+      await store.fetchNowPlaying({ page: 1, language: 'en-US' })
+    } else {
+      await store.searchMovies({
+        title: title.value,
+        year: year.value,
+        genreId: genreId.value,
+        page: 1,
+        language: 'en-US',
+      })
+    }
+  } finally {
+    submitting.value = false
   }
-  await store.searchMovies({
-    title: title.value,
-    year: year.value,
-    genreId: genreId.value,
-    page: 1,
-    language: 'en-US',
-  })
 }
 
 const clear = async () => {
-  title.value = ''
-  year.value = ''
-  genreId.value = ''
-  store.clearSearch()
-  await store.fetchNowPlaying({ page: 1, language: 'en-US' })
+  submitting.value = true
+  try {
+    title.value = ''
+    year.value = ''
+    genreId.value = ''
+    store.clearSearch()
+    await store.fetchNowPlaying({ page: 1, language: 'en-US' })
+  } finally {
+    submitting.value = false
+  }
 }
 
+const goPrev = () => store.prevPage()
+const goNext = () => store.nextPage()
+const goPage = (p) => store.goToPage(p)
+
 onMounted(async () => {
-  store._loadFavorites()
-  await Promise.all([
-    store.fetchGenres(),
-    store.fetchNowPlaying({ page: 1, language: 'en-US' }),
-  ])
+    await Promise.all([
+      store.fetchGenres(),
+      store.fetchNowPlaying({ page: 1, language: 'en-US' }),
+    ])
 })
 </script>
 

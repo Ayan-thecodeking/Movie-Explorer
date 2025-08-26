@@ -16,6 +16,9 @@ export const useMoviesStore = defineStore('movies', {
     genres: [],                 // <— for dropdown
     movieDetails: null,         // <— details page
     favorites: [],              // <— persisted ids
+
+    lastMode: 'now_playing',     // 'now_playing' | 'search'
+    lastFilters: { title: '', year: '', genreId: '' }, // for search pagination
   }),
 
   getters: {
@@ -77,6 +80,7 @@ export const useMoviesStore = defineStore('movies', {
         this.totalPages = Number(data?.total_pages ?? 0)
         this.totalResults = Number(data?.total_results ?? 0)
         this.language = language
+                this.lastMode = 'now_playing'
       } catch (e) {
         this.error = e?.message || 'Failed to load movies'
         this.movies = []
@@ -93,6 +97,7 @@ export const useMoviesStore = defineStore('movies', {
       if (!title && !year && !genreId) {
         this.searchedMovies = []
         this.lastQuery = ''
+        this.lastMode = 'now_playing'
         return
       }
 
@@ -134,6 +139,8 @@ export const useMoviesStore = defineStore('movies', {
         this.totalResults = Number(data?.total_results ?? 0)
         this.language = language
         this.lastQuery = JSON.stringify({ title, year, genreId })
+        this.lastFilters = { title, year, genreId }
+        this.lastMode = 'search'
       } catch (e) {
         this.error = e?.message || 'Failed to search movies'
         this.searchedMovies = []
@@ -168,5 +175,18 @@ export const useMoviesStore = defineStore('movies', {
         this.loading = false
       }
     },
+    
+  async goToPage(page) {
+      page = Math.max(1, Math.min(Number(page || 1), this.totalPages || 1))
+      if (this.lastMode === 'search') {
+        const { title, year, genreId } = this.lastFilters
+        return this.searchMovies({ title, year, genreId, page, language: this.language })
+      } else {
+        return this.fetchNowPlaying({ page, language: this.language })
+      }
+    },
+    async nextPage() { return this.goToPage(this.page + 1) },
+    async prevPage() { return this.goToPage(this.page - 1) },
   },
+  
 })

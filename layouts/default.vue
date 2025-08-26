@@ -10,9 +10,9 @@
     </main>
 
     <!-- Footer -->
-    <footer style="padding:10px; background:#eee;">
-      <small>© 2025 My Nuxt App</small>
-    </footer>
+    <!-- <footer style="padding:10px; background:#eee;">
+      <small>© 2025 By Ayan</small>
+    </footer> -->
   </div>
 </template>
 
