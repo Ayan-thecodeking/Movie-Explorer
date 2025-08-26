@@ -29,6 +29,7 @@
 </template>
 
 <script setup>
+import noImg from '../../assets/no_img.png'
 const props = defineProps({
   movie: { type: Object, required: true },
   isFavorite: { type: Boolean, default: false },
@@ -36,7 +37,7 @@ const props = defineProps({
 const posterUrl = computed(() =>
   props.movie.poster_path
     ? `https://image.tmdb.org/t/p/w500/${props.movie.poster_path}`
-    : '/placeholder-poster.png'
+    : noImg
 )
 const releaseText = computed(() => {
   const d = props.movie.release_date ? new Date(props.movie.release_date) : null
