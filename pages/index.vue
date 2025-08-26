@@ -7,30 +7,38 @@
 
     <!-- Search Form -->
     <form class="search-form" @submit.prevent="onSubmit">
-      <input v-model.trim="title" type="text" placeholder="Title (e.g., Inception)" aria-label="Title" />
-      <input v-model.trim="year" type="number" placeholder="Year (e.g., 2024)" aria-label="Year" min="1878"
-        max="2100" />
-      <select v-model="genreId" aria-label="Genre">
+      <input v-model.trim="title" type="text" placeholder="Title (e.g., Inception)" />
+       <div>
+    <input
+      v-model.trim="year"
+      type="number"
+      placeholder="Year (e.g., 2024)"
+      min="1978"
+      :max="currentYear"
+      :class="{ 'invalid': isYearInvalid }"
+    />
+  </div>
+       <select v-model="genreId">
         <option value="">All Genres</option>
         <option v-for="g in store.genres" :key="g.id" :value="g.id">
           {{ g.name }}
         </option>
       </select>
 
-      <button class="button" type="submit">Search</button>
+      <button :disabled="!hasFilters || isYearInvalid" class="button" type="submit">Search</button>
       <button class="button button-light" type="button" @click="clear">Clear</button>
     </form>
 
     <!-- Feedback -->
     <div v-if="store.loading" class="loading-wrap">
-      <Loading :fullscreen="submitting" :message="loadingMessage" :size="48" :thickness="5" />
+      <Loading :message="loadingMessage" />
     </div>
     <p v-else-if="store.error" class="error">{{ store.error }}</p>
 
     <!-- Results grid -->
     <section v-else class="container movies">
-      <h2 v-if="hasFilters">Search Results</h2>
-      <h2 v-else style="margin-bottom: 12px;">Now Playing</h2>
+      <h2 v-if="store.lastMode === 'search'">Search Results</h2>
+      <h2 v-else>Now Playing</h2>
 
       <div class="movies-grid">
         <MovieCard v-for="m in cards" :key="m.id" :movie="m" :is-favorite="store.isFavorite(m.id)"
@@ -56,43 +64,44 @@ const store = useMoviesStore()
 const title = ref('')
 const year = ref('')
 const genreId = ref('')
-const submitting = ref(false)
-
 const hasFilters = computed(() => title.value || year.value || genreId.value)
-const cards = computed(() => (hasFilters.value ? store.searchedMovies : store.movies))
-const loadingMessage = computed(() =>
-  hasFilters.value ? 'Searching movies…' : 'Loading now playing…'
+const cards = computed(() =>
+  store.lastMode === 'search' ? store.searchedMovies : store.movies
 )
+
+const loadingMessage = computed(() =>
+  store.lastMode === 'search' ? 'Searching movies…' : 'Loading now playing…'
+)
+const currentYear = new Date().getFullYear()
+
+const isYearInvalid = computed(() => {
+  if (!year.value) return false   // empty allowed
+  const num = Number(year.value)
+  return isNaN(num) || num < 1978 || num > currentYear
+})
+
+// Called only when Search is clicked
 const onSubmit = async () => {
-  submitting.value = true
-  try {
-    if (!hasFilters.value) {
-      await store.fetchNowPlaying({ page: 1, language: 'en-US' })
-    } else {
-      await store.searchMovies({
-        title: title.value,
-        year: year.value,
-        genreId: genreId.value,
-        page: 1,
-        language: 'en-US',
-      })
-    }
-  } finally {
-    submitting.value = false
+  if (!title.value && !year.value && !genreId.value) {
+    await store.fetchNowPlaying({ page: 1, language: 'en-US' })
+  } else {
+    await store.searchMovies({
+      title: title.value,
+      year: year.value,
+      genreId: genreId.value,
+      page: 1,
+      language: 'en-US',
+    })
   }
 }
 
+// Reset back to "Now Playing"
 const clear = async () => {
-  submitting.value = true
-  try {
-    title.value = ''
-    year.value = ''
-    genreId.value = ''
-    store.clearSearch()
-    await store.fetchNowPlaying({ page: 1, language: 'en-US' })
-  } finally {
-    submitting.value = false
-  }
+  store.lastMode = 'now_playing'
+  title.value = ''
+  year.value = ''
+  genreId.value = ''
+  await store.fetchNowPlaying({ page: 1, language: 'en-US' })
 }
 
 const goPrev = () => store.prevPage()
@@ -106,6 +115,7 @@ onMounted(async () => {
   ])
 })
 </script>
+
 
 <style scoped lang="scss">
 .hero {
@@ -154,18 +164,20 @@ onMounted(async () => {
 }
 
 .loading-wrap {
-  padding: 48px 16px;
-}
-
-.error {
-  color: #ff6b6b;
-  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px; // ensures vertical space
+  padding: 16px;
 }
 
 .container.movies {
   padding: 20px 16px;
 }
-
+input.invalid {
+  border: 1px solid #ff4d4f;   /* red border */
+  background-color: #2a1e1e;   /* subtle red tint (optional) */
+}
 .movies-grid {
   display: grid;
   gap: 24px;
