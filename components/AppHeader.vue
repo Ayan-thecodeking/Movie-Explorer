@@ -13,7 +13,7 @@
       <!-- Nav links -->
       <nav class="nav" :class="{ open: isOpen }">
         <!-- <NuxtLink to="/" class="nav-link" @click="isOpen = false">Home</NuxtLink> -->
-        <NuxtLink to="/movies" class="nav-link" @click="isOpen = false">Movies</NuxtLink>
+        <NuxtLink to="/" class="nav-link" @click="isOpen = false">Movies</NuxtLink>
         <NuxtLink to="/favorites" class="nav-link" @click="isOpen = false">favorites</NuxtLink>
       </nav>
     </div>
