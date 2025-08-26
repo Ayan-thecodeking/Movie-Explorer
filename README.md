@@ -1,75 +1,34 @@
-# Nuxt Minimal Starter
+# 🎬 TMDB Movies App
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A Vue 3 + Nuxt 3 application that lets users search, browse, and manage their favorite movies using the [TMDB API](https://www.themoviedb.org/documentation/api).  
+The app includes search by title/year/genre, movie details, favorites management, and pagination.
 
-## Setup
+---
 
-Make sure to install dependencies:
+## 🚀 Features
 
-```bash
-# npm
-npm install
+- Browse **Now Playing** movies from TMDB  
+- Multi-field **search form** (title, year, genre)  
+- **Movie Details** page with extra info  
+- Add/Remove from **Favorites** (persisted in localStorage)  
+- **Pagination** for both now playing and search results  
+- Responsive & mobile-friendly UI
 
-# pnpm
-pnpm install
+---
 
-# yarn
-yarn install
+## ⚙️ Tech Stack
 
-# bun
-bun install
-```
+- [Nuxt 3](https://nuxt.com/) (Vue 3 + Vite)
+- [Pinia](https://pinia.vuejs.org/) for state management
+- [Axios](https://axios-http.com/) (via `$request` plugin)
+- SCSS for styling
+- [TMDB API](https://developer.themoviedb.org/)
 
-## Development Server
+---
 
-Start the development server on `http://localhost:3000`:
+## 🛠️ Setup & Installation
 
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+1. **Clone the repo**
+   ```bash
+   git clone https://github.com/your-username/tmdb-movies-app.git
+   cd tmdb-movies-app
